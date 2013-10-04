@@ -6,6 +6,7 @@ import(
 	"encoding/gob"
 	"bytes"
 	"fmt"
+	"time"
 )
 
 type News struct {
@@ -13,6 +14,7 @@ type News struct {
 	Title			string			`json:"title"`
 	Preamble 		string 			`json:"preamble"`
 	Body 			string			`json:"body"`
+	PubDate			time.Time 		`json:"pubDate"`
 }
 
 /*
@@ -28,7 +30,7 @@ func (n News) serialize() []byte {
 func (n News) getId() string {
 	h := md5.New()
 	io.WriteString(h, n.Url)
-	return fmt.Sprintf("%x", h.Sum(nil))
+	return fmt.Sprintf("news_%x", h.Sum(nil))
 }
 
 /*

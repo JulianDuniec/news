@@ -41,6 +41,6 @@ func doImport() {
 }
 
 func importFeedItem (item * rss.Item) {
-	news := store.News{item.Link, item.Title, item.Content, ""}
+	news := store.News{item.Link, item.Title, item.Content, "", item.Date}
 	store.Add(news)
 }
