@@ -1,0 +1,1 @@
+curl -X PUT -d '{"title" : "Hello", "preamble" : "World", "body" : "Of news", "url" : "http://www.google.com"}' http://localhost:8080/news

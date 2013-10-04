@@ -2,8 +2,9 @@ package server
 
 import (
 	"code.google.com/p/gorest"
-	"fmt"
+	"github.com/julianduniec/news/store"
 	"net/http"
+	
 )
 
 func Start() {
@@ -12,23 +13,18 @@ func Start() {
 	http.ListenAndServe(":8080",nil)
 }
 
-type News struct {
-	Title			string
-	Preamble 		string
-	Body 			string
-}
 
 type NewsService struct {
 	gorest.RestService						`consumes:"application/json" produces:"application/json"`
-	listNews				gorest.EndPoint `method:"GET" path:"/news" output:"News"`
-	numbers					gorest.EndPoint `method:"GET" path:"/numbers" output:"[]News"`
+	listNews				gorest.EndPoint `method:"GET" path:"/news" output:"[]News"`
+	addNews					gorest.EndPoint	`method:"PUT" path:"/news" postdata:"News"`
 }
 
-func(s NewsService) Numbers() []News {
-	return []News{
-		News{"Hello", "World", "Of news"}}
+func(s NewsService) ListNews() []store.News {
+	return store.All()
 }
 
-func(s NewsService) ListNews() News {
-	return News{"Hello", "World", "Of news"}
+func(s NewsService) AddNews(news store.News) {
+	store.Add(news)
+	s.ResponseBuilder().Created("/news")
 }
