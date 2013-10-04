@@ -1,9 +1,11 @@
 package store
 
 import(
-	
+	"crypto/md5"
+	"io"
 	"encoding/gob"
 	"bytes"
+	"fmt"
 )
 
 type News struct {
@@ -21,6 +23,12 @@ func (n News) serialize() []byte {
 	enc := gob.NewEncoder(&buffer)
 	enc.Encode(n)
 	return buffer.Bytes()
+}
+
+func (n News) getId() string {
+	h := md5.New()
+	io.WriteString(h, n.Url)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 /*

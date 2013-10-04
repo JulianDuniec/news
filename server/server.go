@@ -1,16 +1,15 @@
 package server
 
 import (
-	"code.google.com/p/gorest"
+	"github.com/julianduniec/gorest"
 	"github.com/julianduniec/news/store"
 	"net/http"
-
 )
 
-func Start() {
+func Start(port string) {
 	gorest.RegisterService(new(NewsService))
-	http.Handle("/",gorest.Handle())    
-	http.ListenAndServe(":8080",nil)
+	http.Handle("/", gorest.Handle())    
+	http.ListenAndServe(":" + port, nil)
 }
 
 

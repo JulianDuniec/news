@@ -6,9 +6,18 @@ import(
 )
 
 var (
-	server = ":6379"
-	newskey = "news"
-	pool = &redis.Pool{
+	/*
+		Redis server
+	*/
+	server 		= ":6379"
+	/*
+		Key of the news-list
+	*/
+	newskey 	= "news"
+	/*
+		Connection-pool for redis
+	*/
+	pool 		= &redis.Pool{
 		MaxIdle: 3,
 		IdleTimeout: 240 * time.Second,
 		Dial: func () (redis.Conn, error) {
@@ -25,6 +34,10 @@ var (
 	}
 )
 
+/*
+	Returns all news within the 
+	range, from and to
+*/
 func All(from, to int) []News {
 	conn := pool.Get()
 	defer conn.Close()
@@ -37,15 +50,39 @@ func All(from, to int) []News {
 				to)))
 }
 
-func Add(news News) {
+func HasNews(news News) bool {
 	conn := pool.Get()
 	defer conn.Close()	
+
+	exists, _ := redis.Bool(conn.Do("EXISTS", news.getId()))
+	return exists
+}
+
+/*
+	Adds a news-item to the list of news
+*/
+func Add(news News) {
+	if HasNews(news) == true {
+		return
+	}
+	
+	conn := pool.Get()
+	defer conn.Close()	
+
 	conn.Do(
 		"LPUSH", 
 		newskey, 
 		news.serialize())
+	conn.Do(
+		"SET", 
+		news.getId(), 
+		news.serialize())
 }
 
+/*
+	Creates a []News from an []interface, returned
+	from redis.Values
+*/
 func newsListFromRedisValues(values []interface{}, err error) []News {
 	news := []News{}
 	imax := len(values)
