@@ -13,16 +13,22 @@ type News struct {
 	Body 			string			`json:"body"`
 }
 
+/*
+	Serializes the news into a bytearray
+*/
 func (n News) serialize() []byte {
-	var network bytes.Buffer
-	enc := gob.NewEncoder(&network)
+	var buffer bytes.Buffer
+	enc := gob.NewEncoder(&buffer)
 	enc.Encode(n)
-	return network.Bytes()
+	return buffer.Bytes()
 }
 
+/*
+	Deserializes a bytearray into a news-object
+*/
 func newsFromBytes(b []byte) News {
-	network := *bytes.NewBuffer(b)
-	dec := gob.NewDecoder(&network)
+	buffer := *bytes.NewBuffer(b)
+	dec := gob.NewDecoder(&buffer)
 	var news News
 	dec.Decode(&news)
 	return news

@@ -5,7 +5,6 @@ import(
 	"time"
 )
 
-
 var (
 	server = ":6379"
 	newskey = "news"
@@ -29,19 +28,30 @@ var (
 func All(from, to int) []News {
 	conn := pool.Get()
 	defer conn.Close()
-	news := []News{}
-	val, err := redis.Values(conn.Do("LRANGE", newskey, from, to))
-	imax := len(val)
-	for i := 0; i < imax; i++ {
-		buffer, _ := redis.Bytes(val[i], err)
-		news = append(news, newsFromBytes(buffer))
-	}	
-	return news
+	return newsListFromRedisValues(
+		redis.Values(
+			conn.Do(
+				"LRANGE", 
+				newskey, 
+				from, 
+				to)))
 }
 
 func Add(news News) {
 	conn := pool.Get()
-	defer conn.Close()
-	
-	conn.Do("LPUSH", newskey, news.serialize())
+	defer conn.Close()	
+	conn.Do(
+		"LPUSH", 
+		newskey, 
+		news.serialize())
+}
+
+func newsListFromRedisValues(values []interface{}, err error) []News {
+	news := []News{}
+	imax := len(values)
+	for i := 0; i < imax; i++ {
+		buffer, _ := redis.Bytes(values[i], err)
+		news = append(news, newsFromBytes(buffer))
+	}	
+	return news
 }
