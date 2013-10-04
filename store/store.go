@@ -3,7 +3,6 @@ package store
 import(
 	"github.com/garyburd/redigo/redis"
 	"time"
-	"fmt"
 )
 
 var (

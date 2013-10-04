@@ -4,12 +4,12 @@ import (
 	"github.com/SlyMarbo/rss"
 	"github.com/julianduniec/news/store"
 	"time"
+	"fmt"
 )
 
 var (
 	feeds []rss.Feed
 	finished					= true
-	pollingFrequencySeconds 	= 5 * time.Second
 	feedUris 					= []string {
 		"http://www.aftonbladet.se/nyheter/rss.xml",
 		"http://www.aftonbladet.se/sportbladet/rss.xml",
@@ -17,14 +17,16 @@ var (
 		"http://www.aftonbladet.se/kultur/rss.xml"}
 )
 
-func Start() {
+func Start(pollingFrequency time.Duration) {
+	fmt.Println(pollingFrequency)
 	setupFeeds()
-	for _ = range time.Tick(pollingFrequencySeconds) {
+	for _ = range time.Tick(pollingFrequency) {
 		doImport()
 	}
 }
 
 func setupFeeds() {
+	fmt.Println("importer:setupFeeds()")
 	for _, uri := range feedUris {
 		feed, _ := rss.Fetch(uri)
 		feeds = append(feeds, *feed)
@@ -32,6 +34,7 @@ func setupFeeds() {
 }
 
 func doImport() {
+	fmt.Println("importer:doImport()")
 	for _, feed := range feeds {
 		feed.Update()
 		for _, item := range feed.Items {
