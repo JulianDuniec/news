@@ -1,0 +1,4 @@
+http://www.aftonbladet.se/nyheter/rss.xml
+http://www.aftonbladet.se/sportbladet/rss.xml
+http://www.aftonbladet.se/nojesbladet/rss.xml
+http://www.aftonbladet.se/kultur/rss.xml

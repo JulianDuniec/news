@@ -10,11 +10,13 @@ import(
 var(
 	port 				string
 	pollingfrequency 	string
+	rssFile				string
 )
 
 func init() {
 	flag.StringVar(&port, 				"port", 				"8090", "Port number")
 	flag.StringVar(&pollingfrequency, 	"pollingfrequency", 	"2m0s", "Polling frequency")
+	flag.StringVar(&rssFile, 			"rssFile", 				"", "Polling frequency")
 }
 
 func main() {
@@ -22,7 +24,7 @@ func main() {
 	
 	duration, _ := time.ParseDuration(pollingfrequency)
 
-	go importer.Start(duration)
+	go importer.Start(duration, rssFile)
 
 	go server.Start(port)
 
