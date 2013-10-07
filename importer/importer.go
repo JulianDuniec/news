@@ -16,18 +16,18 @@ var (
 func Start(pollingFrequency time.Duration, rssFile string) {
 	setupFeeds(rssFile)
 	
-	currentDuration := pollingFrequency
-	for _ = range time.Tick(currentDuration) {
-		now := time.Now()
-		doImport()		
+	for ; ; {
+		startTime := time.Now()
+		doImport()
 		/*
 			Calculate the remainder of the pollingFrequency - the execution-time
 			and re-execute function to keep a pace as close to polling-frequency as possible
 
 			This allows doImport() to take longer than the pollingFrequency
 		*/
-		currentDuration := pollingFrequency - time.Since(now) 
+		time.Sleep(pollingFrequency - time.Since(startTime))
 	}
+	
 }
 
 func setupFeeds(rssFile string) {
@@ -51,19 +51,24 @@ func addFeed(uri string) {
 
 func doImport() {
 	var wg sync.WaitGroup
+
 	for _, feed := range feeds {
-		feed.Update()
-		for _, item := range feed.Items {
-			wg.Add(1)
-			go importFeedItem(item, &wg)		
-		}
+		wg.Add(1)
+		go importFeed(feed, &wg)
 	}
 	wg.Wait()
 }
 
-func importFeedItem (item * rss.Item, wg *sync.WaitGroup) {
+func importFeed(feed rss.Feed, wg *sync.WaitGroup) {
+	feed.Update()
+	for _, item := range feed.Items {
+		importFeedItem(item)		
+	}
+	wg.Done()
+}
+
+func importFeedItem (item * rss.Item) {
 	news := store.News{item.Link, item.Title, item.Content, "", item.Date}
 	store.Add(news)
-	wg.Done()
 
 }
