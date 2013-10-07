@@ -14,21 +14,26 @@ var (
 )
 
 func Start(pollingFrequency time.Duration, rssFile string) {
-	fmt.Println(pollingFrequency)
 	setupFeeds(rssFile)
-	for _ = range time.Tick(pollingFrequency) {
-		if finished == true {
-			doImport()
-		}
-		
+	
+	currentDuration := pollingFrequency
+	for _ = range time.Tick(currentDuration) {
+		now := time.Now()
+		doImport()		
+		/*
+			Calculate the remainder of the pollingFrequency - the execution-time
+			and re-execute function to keep a pace as close to polling-frequency as possible
+
+			This allows doImport() to take longer than the pollingFrequency
+		*/
+		currentDuration := pollingFrequency - time.Since(now) 
 	}
 }
 
 func setupFeeds(rssFile string) {
-
 	feedUris, err := fetchRssList(rssFile)
 	if err != nil {
-		fmt.Println("Could not open file", err)
+		panic(fmt.Sprintf("Could not open file %s", rssFile))
 	}
 	for _, uri := range feedUris {
 		go addFeed(uri)
@@ -45,8 +50,6 @@ func addFeed(uri string) {
 }
 
 func doImport() {
-	finished = false
-	fmt.Println("importer:doImport()")
 	var wg sync.WaitGroup
 	for _, feed := range feeds {
 		feed.Update()
@@ -55,16 +58,12 @@ func doImport() {
 			go importFeedItem(item, &wg)		
 		}
 	}
-	fmt.Println("importer:doImport():waiting")
 	wg.Wait()
-	fmt.Println("importer:doImport():done")
-	finished = true
 }
 
 func importFeedItem (item * rss.Item, wg *sync.WaitGroup) {
 	news := store.News{item.Link, item.Title, item.Content, "", item.Date}
 	store.Add(news)
-	fmt.Println(item.Link)
 	wg.Done()
 
 }
