@@ -14,6 +14,8 @@ var (
 		Key of the news-list
 	*/
 	newskey 	= "news"
+
+	newskey_maxlen = 20
 	/*
 		Connection-pool for redis
 	*/
@@ -50,7 +52,7 @@ func All(from, to int) []News {
 				to)))
 }
 
-func HasNews(news News) bool {
+func exists(news News) bool {
 	conn := pool.Get()
 	defer conn.Close()	
 
@@ -62,7 +64,7 @@ func HasNews(news News) bool {
 	Adds a news-item to the list of news
 */
 func Add(news News) {
-	if HasNews(news) == true {
+	if exists(news) == true {
 		return
 	}
 	

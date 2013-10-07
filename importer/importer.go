@@ -1,7 +1,7 @@
 package importer
 
 import (
-	"github.com/SlyMarbo/rss"
+	"github.com/julianduniec/news/rss"
 	"github.com/julianduniec/news/store"
 	"time"
 	"fmt"
@@ -13,15 +13,12 @@ var (
 		Contains all feeds
 	*/
 	feeds []rss.Feed
-	/*
-		Used to lock the feeds-collection
-	*/
-	feedLock sync.Mutex
 )
 
 func Start(pollingFrequency time.Duration, rssFile string) {
 	setupFeeds(rssFile)
 	for ; ; {
+		fmt.Println("import")
 		startTime := time.Now()
 		importFeeds()
 		/*
@@ -59,36 +56,31 @@ func setupFeeds(rssFile string) {
 
 
 func addFeed(uri string, wg * sync.WaitGroup) {
+	defer wg.Done()
 	feed, err := rss.Fetch(uri)
 	if err != nil {
 		fmt.Println(err, uri)
 		return
 	}
-	
-	feedLock.Lock()
 	feeds = append(feeds, *feed)
-	feedLock.Unlock()
-	
-	wg.Done()
 }
 
 func importFeeds() {
 	var wg sync.WaitGroup
-	feedLock.Lock()
 	for _, feed := range feeds {
 		wg.Add(1)
 		go importFeed(feed, &wg)
 	}
-	feedLock.Unlock()
 	wg.Wait()
 }
 
 func importFeed(feed rss.Feed, wg *sync.WaitGroup) {
+	defer wg.Done()
 	feed.Update()
 	for _, item := range feed.Items {
 		importFeedItem(item)		
 	}
-	wg.Done()
+	
 }
 
 func importFeedItem (item * rss.Item) {
