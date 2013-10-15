@@ -18,11 +18,22 @@ func Init() {
 	}
 }
 func SaveSymbol(symbol *models.Symbol) {
-	session.DB("stock").C("history").Upsert(symbol, symbol)
+	if session == nil {
+		Init()
+	}
+	session.DB("stock").C("symbols").Upsert(symbol, symbol)
 }
 
-func SaveHistory(history []*models.HistoricalDataPoint) {
-	symbol := history[0].Symbol
+func ClearHistory(symbol string) {
+	if session == nil {
+		Init()
+	}
 	session.DB("stock").C("history").RemoveAll(bson.M{"symbol": symbol})
+}
+
+func SaveHistory(history *models.HistoricalDataPoint) {
+	if session == nil {
+		Init()
+	}
 	session.DB("stock").C("history").Insert(history)
 }

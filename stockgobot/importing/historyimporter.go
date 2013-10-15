@@ -40,18 +40,26 @@ func ImportHistory(symbol string) ([]*models.HistoricalDataPoint, error) {
 }
 
 func createHistoricalDataPointFromRow(symbol, row string) *models.HistoricalDataPoint {
-	//Date,Open,High,Low,Close,Volume,Adj Close
 	split := strings.Split(row, ",")
-	date, _ := time.Parse("2013-02-03", split[0])
+	date := parseTime(split[0])
 	open, _ := strconv.ParseFloat(split[1], 32)
 	high, _ := strconv.ParseFloat(split[2], 32)
 	low, _ := strconv.ParseFloat(split[3], 32)
 	closeRate, _ := strconv.ParseFloat(split[4], 32)
 	volume, _ := strconv.Atoi(split[5])
-	return &models.HistoricalDataPoint{symbol, date.Year(), int(date.Month()), date.Day(), open, high, low, closeRate, volume}
+	return &models.HistoricalDataPoint{symbol, date, open, high, low, closeRate, volume}
+}
+
+func parseTime(s string) time.Time {
+	split := strings.Split(s, "-")
+	year, _ := strconv.Atoi(split[0])
+	month, _ := strconv.Atoi(split[1])
+	day, _ := strconv.Atoi(split[2])
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
 
 func getUrl(symbol string) string {
-
-	return fmt.Sprintf("http://ichart.finance.yahoo.com/table.csv?s=%s&e=10&f=2013&g=d&ignore=.csv", symbol)
+	return fmt.Sprintf("http://ichart.finance.yahoo.com/table.csv?s=%s&e=%00d&f=%d&g=d&ignore=.csv",
+		symbol,
+		int(time.Now().Month()), time.Now().Year())
 }
