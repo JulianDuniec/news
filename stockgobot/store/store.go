@@ -37,3 +37,12 @@ func SaveHistory(history *models.HistoricalDataPoint) {
 	}
 	session.DB("stock").C("history").Insert(history)
 }
+
+func GetSymbols() []models.Symbol {
+	if session == nil {
+		Init()
+	}
+	result := []models.Symbol{}
+	session.DB("stock").C("symbols").Find(bson.M{}).All(&result)
+	return result
+}

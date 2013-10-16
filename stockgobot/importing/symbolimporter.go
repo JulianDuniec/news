@@ -16,12 +16,16 @@ func ImportSymbols() []*models.Symbol {
 	defer file.Close()
 	reader := bufio.NewReader(file)
 	symbols := make([]*models.Symbol, 0)
+	firstLine := true
 	for {
 		s, err := reader.ReadString(10)
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			panic(err)
+		} else if firstLine == true {
+			firstLine = false
+			continue
 		}
 		symbol := symbolFromRow(s)
 		if symbol != nil {
